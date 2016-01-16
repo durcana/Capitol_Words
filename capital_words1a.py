@@ -8,38 +8,34 @@ KEY = os.environ.get('API_KEY')
 
 STUB = "http://capitolwords.org/api/1/phrases.json"
 
-print "Would you like to find the most frequent years within a specific date or month?"
-Type = raw_input().lower()
-while Type.lower() != 'month' and Type.lower() != 'date':
-    Type = raw_input().lower()
 
-print "Give the date as YYYYMMDD or the month as YYYYMM"
-Value = raw_input()
-#while isinstance(Value, int) == False and len(Value) != 6 and len(Value) != 8:
-#    Value = raw_input()
-#try?
-
-
-params_dict = {'entity_type': Type,
-               'entity_value': Value,
-               'sort': 'count+desc',
-               'apikey': KEY}
-
-
-def main(params_dict):
-    data = get_data(params_dict)
+def main():
+    api_dict = user_input()
+    data = get_data(api_dict)
     manage_db(data)
 
 
-def get_data(params_dict):
-    api_dict = {'entity_type': 'month',
-              'entity_value': '201007',
-              'sort': 'count+desc',
-              'apikey': KEY}
+def user_input():
+    print "Search by specific date or month?"
+    user_type = raw_input().lower()
+    value = ""
+    if user_type == 'month':
+        print "Give the month as YYYYMM"
+        value = raw_input()
+    elif user_type == 'date':
+        print "Give the date as YYYYMMDD"
+        value = raw_input()
+    else:
+        user_input()
 
-    api_dict.update(params_dict)
+    params_dict = {'entity_type': user_type,
+                   'entity_value': value,
+                   'sort': 'count+desc',
+                   'apikey': KEY}
+    return params_dict
 
-    # generator expression
+
+def get_data(api_dict):
     key_val_gen = (key + '=' + val for key, val in api_dict.items())
     query_string = '&'.join(key_val_gen)
 
@@ -67,11 +63,11 @@ def manage_db(data):
     cur.execute("CREATE TABLE IF NOT EXISTS records (" + ", ".join(keys) + ")")
     for item in data:
         values = [item.get(key) for key in keys]
-        stub = "INSERT INTO records VALUES ({})".format(qmark_str)
+        stub = "INSERT INTO records valueS ({})".format(qmark_str)
         cur.execute(stub, values)
 
     conn.commit()
     conn.close()
 
 if __name__ == '__main__':
-    main({})
+    main()
